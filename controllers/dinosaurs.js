@@ -3,6 +3,7 @@ const router = express.Router();
 //  (at the very top, declaring your router)
 //  your routes here: router.get, router.post, etc
 const fs = require("fs");
+const { Router } = require("express");
 
 // index route
 router.get("/", (req, res) => {
@@ -30,6 +31,31 @@ router.get("/new", (req, res) => {
   res.render("dinosaurs/new");
 });
 
+// get the update form
+router.get("/edit/:id", (req, res) => {
+  let dinosaurs = fs.readFileSync("./dinosaurs.json");
+  let dinoData = JSON.parse(dinosaurs);
+  res.render("dinosaurs/edit", {
+    dino: dinoData[req.params.id],
+    dinoId: req.params.id,
+  });
+});
+
+// put route for updating dino information
+router.put("/:id", (req, res) => {
+  let dinosaurs = fs.readFileSync("./dinosaurs.json");
+  dinosaurs = JSON.parse(dinosaurs);
+
+  // update the info
+  // re-assigning the name and type fields of the dinosaur
+  dinosaurs[req.params.id].name = req.body.name;
+  dinosaurs[req.params.id].type = req.body.type;
+
+  // save the edited dinosaurs information
+  fs.writeFileSync("./dinosaurs.json", JSON.stringify(dinosaurs));
+  res.redirect("/dinosaurs");
+});
+
 // show route [uses URL parameter "id"]
 router.get("/:id", (req, res) => {
   let dinosaurs = fs.readFileSync("./dinosaurs.json");
@@ -51,6 +77,21 @@ router.post("/", (req, res) => {
   // redirect to the index get route
   res.redirect("/dinosaurs");
 });
+
+router.delete("/:id", (req, res) => {
+  let dinosaurs = fs.readFileSync("./dinosaurs.json");
+  dinosaurs = JSON.parse(dinosaurs);
+
+  // delete the dinosaur from the dinosaurs json file
+  // use the splice() method to deleite it from the array that's saved in the variable dinosaurs
+  dinosaurs.splice(req.params.id, 1);
+
+  // save the dinosaurs back into the JSON file
+  fs.writeFileSync("./dinosaurs.json", JSON.stringify(dinosaurs));
+
+  res.redirect("/dinosaurs");
+});
+// we deleted petrie... moment of silence.
 
 module.exports = router;
 // (at the bottom, so routes can be included elsewhere)
